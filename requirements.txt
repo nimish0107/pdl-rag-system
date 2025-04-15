@@ -1,0 +1,5 @@
+datasets
+tqdm
+transformers
+pytesseract
+pillow
