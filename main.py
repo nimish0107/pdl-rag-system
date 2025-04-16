@@ -11,9 +11,9 @@ text = image_to_text(image_path)
 print("OCR processing completed.")
 
 print("Translating text...")
-translated_text = asyncio.run(translate_punjabi_to_HindiEnglish([text]))
+translated_text = asyncio.run(translate_punjabi_to_HindiEnglish(text))
 print("Translation completed.")
-output_text = f"English:\n{translated_text[0]['english']}\n\nHindi:\n{translated_text[0]['hindi']}\n\nPunjabi:\n{translated_text[0]['punjabi']}"
+output_text = f"English:\n{translated_text['english']}\n\nHindi:\n{translated_text['hindi']}\n\nPunjabi:\n{translated_text['punjabi']}"
 with open("output.txt", "w", encoding="utf-8") as f:
     f.write(output_text)
 print("Translated text from the image:")
