@@ -2,8 +2,9 @@ import torch
 import asyncio
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 from src.indictranstoolkit.IndicTransToolkit.processor import IndicProcessor
+from utils import logger
 DEVICE = "cpu"
-print(f"[INFO] Using device: {DEVICE}")
+logger.info(f"[INFO] Using device: {DEVICE}")
 
 
 src_lang = "pan_Guru"
@@ -52,7 +53,7 @@ async def translate_punjabi_to_HindiEnglish(input_text):
     # with open("translations_output.txt", "w", encoding="utf-8") as f:
     #     f.writelines(output_lines)
 
-    print("\nTranslation Completed.")
+    logger.info("\nTranslation Completed.")
     return output_lines
 
 if __name__ == "__main__":
@@ -64,4 +65,4 @@ if __name__ == "__main__":
         "ਮੇਰੇ ਦੋਸਤ ਨੇ ਮੈਨੂੰ ਉਸਦੀ ਜਨਮਦਿਨ ਦੀ ਪਾਰਟੀ ਵਿੱਚ ਬੁਲਾਇਆ ਹੈ, ਅਤੇ ਮੈਂ ਉਸਨੂੰ ਇੱਕ ਤੋਹਫਾ ਦੇਵਾਂਗਾ।",
     ]
     output = asyncio.run(translate_punjabi_to_HindiEnglish(input_sentences))
-    print(output)
+    logger.info(output)
