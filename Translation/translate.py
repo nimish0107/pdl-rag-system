@@ -1,3 +1,4 @@
+import re
 import torch
 import asyncio
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
@@ -19,6 +20,19 @@ tokenizer_hi = AutoTokenizer.from_pretrained(model_name_hi, trust_remote_code=Tr
 model_hi = AutoModelForSeq2SeqLM.from_pretrained(model_name_hi, trust_remote_code=True).to(DEVICE)
 
 ip = IndicProcessor(inference=True)
+
+
+def clean_output_text_hindi(text):
+    # Remove any pattern like [....], [-----], [......], [.........], etc.
+    text = re.sub(r'\[*\s*[\.\-\=\_]{2,}\s*\]*', '', text)
+    
+    # Remove standalone vertical bar sequences like |||||||
+    text = re.sub(r'।{2,}', '।', text)
+    
+    # Optional: remove extra spaces introduced
+    text = re.sub(r'\s{2,}', ' ', text)
+    
+    return text.strip()
 
 async def translate_batch(batch, src, tgt, tokenizer, model):
     preprocessed = ip.preprocess_batch(batch, src_lang=src, tgt_lang=tgt)
@@ -48,7 +62,7 @@ async def translate_punjabi_to_HindiEnglish(input_text):
     for punjabi, en, hi in zip(input_sentences, translations_en, translations_hi):
         output_lines["punjabi"] += punjabi + "\n\n"
         output_lines["english"] += en + "\n\n"
-        output_lines["hindi"] += hi + "\n\n"
+        output_lines["hindi"] += clean_output_text_hindi(hi) + "\n\n"
 
     # with open("translations_output.txt", "w", encoding="utf-8") as f:
     #     f.writelines(output_lines)
