@@ -5,3 +5,4 @@ pytesseract
 pillow
 # IndicTranslateToolkit @ git+https://github.com/VarunGumma/IndicTransToolkit.git
 -e git+https://github.com/VarunGumma/IndicTransToolkit.git#egg=IndicTransToolkit
+langchain
