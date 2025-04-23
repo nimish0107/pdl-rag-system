@@ -58,11 +58,11 @@ async def translate_punjabi_to_HindiEnglish(input_text):
 
     translations_en, translations_hi = await asyncio.gather(task_en, task_hi)
 
-    output_lines = {"punjabi": "", "english": "", "hindi": ""}
+    output_lines = {"punjabi": [""], "english": [""], "hindi": [""]}
     for punjabi, en, hi in zip(input_sentences, translations_en, translations_hi):
-        output_lines["punjabi"] += punjabi + "\n\n"
-        output_lines["english"] += en + "\n\n"
-        output_lines["hindi"] += clean_output_text_hindi(hi) + "\n\n"
+        output_lines["punjabi"][0] += punjabi + "\n\n"
+        output_lines["english"][0] += en + "\n\n"
+        output_lines["hindi"][0] += clean_output_text_hindi(hi) + "\n\n"
 
     # with open("translations_output.txt", "w", encoding="utf-8") as f:
     #     f.writelines(output_lines)
