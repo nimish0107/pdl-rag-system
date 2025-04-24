@@ -5,9 +5,10 @@ from OCR.ocr import read_image
 from Translation.translate import translate_punjabi_to_HindiEnglish
 from utils import logger
 from RAG.TextSplitter import MultilingualTextSplitter, CHUNK_OVERLAP, CHUNK_SIZE
-
+from RAG.embeddings import FaissEmbeddingStore
+import os
 logger.info("Image reading and OCR processing script started.")
-image_path = r"N:\Coding\Projects\PDL\data\344.jpg"  # Replace with your image path
+image_path = r"C:\Users\harsh\pdl\image_test.jpg"  # Replace with your image path
 image = read_image(image_path)
 text = image_to_text(image)
 logger.info("OCR processing completed.")
@@ -24,8 +25,20 @@ logger.info("Text chunking started.")
 text_splitter = MultilingualTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
 chunked_docs = text_splitter.split_documents(translated_text)
 logger.info("Text chunking completed.")
+
+
+
 logger.info(chunked_docs)
+
+store = FaissEmbeddingStore()
+embeddings = store.embed_and_store(chunked_docs)
+
+
+logger.info("Embeddings generated and stored successfully.")
+store.save_all()
+logger.info("Embeddings stored successfully.")
 logger.info("Pipeline completed successfully.")
+
 
 # import asyncio
 # import gradio as gr
