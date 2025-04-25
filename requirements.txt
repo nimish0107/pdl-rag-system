@@ -8,4 +8,5 @@ pillow
 langchain
 faiss-cpu
 sentence_transformers
+langchain-community
   
