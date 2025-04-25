@@ -15,13 +15,36 @@ EMBEDDING_DIR = "faiss_indexes"
 
 os.makedirs(EMBEDDING_DIR, exist_ok=True)
 
-class FaissEmbeddingStore:
+class MultilingualEmbedder:
+
     def __init__(self, model_name=MODEL_NAME):
         self.model = SentenceTransformer(model_name)
+
+    def embed(self, texts: List[str]) -> np.ndarray:
+        """
+        Embeds a list of texts using the SentenceTransformer model.
+        """
+        embeddings = self.model.encode(texts, convert_to_numpy=True, show_progress_bar=True)
+        
+        # Check if embeddings are empty or None
+        if embeddings is None or len(embeddings) == 0:
+            logger.warning(" No embeddings returned.")
+            return None
+        
+        logger.info(f"Generated {len(embeddings)} embeddings with shape: {embeddings.shape}")
+        return embeddings
+
+class FaissEmbeddingStore:
+    def __init__(self, model_name=MODEL_NAME, persist_dir=EMBEDDING_DIR):
+        """
+        Initializes the FaissEmbeddingStore with a multilingual embedder and FAISS indexes for each language.
+        """
+        self.persist_dir = persist_dir
+        self.embedder = MultilingualEmbedder(model_name)
         self.indexes = {lang: faiss.IndexFlatL2(384) for lang in LANGUAGES}  
         self.metadata = {lang: [] for lang in LANGUAGES}
     
-    def embed_and_store(self, chunked_docs: Dict[str, List[Dict]]):
+    def add_documents(self, chunked_docs: Dict[str, List[Dict]]):
         """
         Embeds documents for each language and stores embeddings in FAISS index.
         """
@@ -36,7 +59,7 @@ class FaissEmbeddingStore:
             logger.info(f"Generating embeddings for {lang}...")
             
             # Generate embeddings using the SentenceTransformer model
-            embeddings = self.model.encode(texts, convert_to_numpy=True, show_progress_bar=True)
+            embeddings = self.embedder.embed(texts)
             
             # Check if embeddings are empty or None
             if embeddings is None or len(embeddings) == 0:
