@@ -6,6 +6,7 @@ from sentence_transformers import SentenceTransformer
 from typing import Dict, List
 from utils import logger  
 from langchain.schema import Document
+from langchain.embeddings.base import Embeddings
 
 
 from RAG.TextSplitter import MultilingualTextSplitter
@@ -16,7 +17,7 @@ EMBEDDING_DIR = "faiss_indexes"
 
 os.makedirs(EMBEDDING_DIR, exist_ok=True)
 
-class MultilingualEmbedder:
+class MultilingualEmbedder(Embeddings):
 
     def __init__(self, model_name=MODEL_NAME):
         """
@@ -25,20 +26,6 @@ class MultilingualEmbedder:
         logger.info(f"Loading SentenceTransformer model: {model_name}")
         self.model = SentenceTransformer(model_name)
         logger.info(f"Model loaded successfully: {model_name}")
-
-    def embed(self, texts: List[str]) -> np.ndarray:
-        """
-        Embeds a list of texts using the SentenceTransformer model.
-        """
-        embeddings = self.model.encode(texts, convert_to_numpy=True, show_progress_bar=True)
-        
-        # Check if embeddings are empty or None
-        if embeddings is None or len(embeddings) == 0:
-            logger.warning(" No embeddings returned.")
-            return None
-        
-        logger.info(f"Generated {len(embeddings)} embeddings with shape: {embeddings.shape}")
-        return embeddings
     
     def embed_documents(self, texts: List[str]) -> np.ndarray:
         """
@@ -76,7 +63,8 @@ class FaissEmbeddingStore:
             try:
                 self.vector_stores[language] = FAISS.load_local(
                     store_path,
-                    self.embedder
+                    self.embedder,
+                    allow_dangerous_deserialization=True
                 )
                 logger.info(f"Loaded existing vector store for {language}")
             except Exception as e:
@@ -132,19 +120,24 @@ class FaissEmbeddingStore:
             self.vector_stores[lang].save_local(store_path)
             logger.info(f"Updated and saved vector store for {lang}")
 
+    def search(self, query: str, language: str, k: int = 5) -> List[Document]:
+        """
+        Search for relevant documents in the specified language.
+        
+        Args:
+            query: The search query
+            language: The language to search in
+            k: Number of results to return
+            
+        Returns:
+            List of relevant Document objects
+        """
+        if language not in self.vector_stores or self.vector_stores[language] is None:
+            raise ValueError(f"No vector store available for {language}")
+        
+        return self.vector_stores[language].similarity_search(query, k=k)
+    
+    
 
-    # def save_all(self):
-    #     """
-    #     Saves the FAISS index and metadata for each language.
-    #     """
-    #     for lang in LANGUAGES:
-    #         # Save the FAISS index to a file
-    #         faiss.write_index(self.indexes[lang], os.path.join(EMBEDDING_DIR, f"{lang}_index.faiss"))
-            
-    #         # Save metadata to a JSON file
-    #         with open(os.path.join(EMBEDDING_DIR, f"{lang}_metadata.json"), "w", encoding="utf-8") as f:
-    #             json.dump(self.metadata[lang], f, ensure_ascii=False, indent=2)
-            
-    #         logger.info(f"Saved {lang} index and metadata to {EMBEDDING_DIR}")
             
 
