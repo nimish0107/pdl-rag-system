@@ -7,9 +7,10 @@ from utils import logger
 from RAG.TextSplitter import MultilingualTextSplitter, CHUNK_OVERLAP, CHUNK_SIZE
 from RAG.embeddings import FaissEmbeddingStore
 import os
+from RAG.generation import OllamaAnswerGenerator
 text_splitter = MultilingualTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
 store = FaissEmbeddingStore()
-
+answer_generator = OllamaAnswerGenerator(model_name="gemma3", ollama_base_url="http://localhost:11434")
 # logger.info("Image reading and OCR processing script started.")
 # image_path = r"N:\Coding\Projects\PDL\data\344.jpg"  # Replace with your image path
 
@@ -57,11 +58,14 @@ for language, query in test_queries.items():
         logger.info(f"Found {len(results)} results for {language} query")
         
         # Display each result
-        for i, doc in enumerate(results):
-            logger.info(f"Result {i+1}:")
-            logger.info(f"Content: {doc.page_content}...")
-            logger.info(f"Metadata: {doc.metadata}")
-            logger.info("---")
+        # for i, doc in enumerate(results):
+        #     logger.info(f"Result {i+1}:")
+        #     logger.info(f"Content: {doc.page_content}...")
+        #     logger.info(f"Metadata: {doc.metadata}")
+        #     logger.info("---")
+
+        answer = answer_generator.generate_answer(query, results, language)
+        logger.info(f"Answer for {language} query: {answer}")
             
     except Exception as e:
         logger.error(f"Error testing search in {language}: {e}")
