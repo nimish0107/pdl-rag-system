@@ -10,7 +10,7 @@ import os
 from RAG.generation import OllamaAnswerGenerator
 text_splitter = MultilingualTextSplitter(chunk_size=CHUNK_SIZE, chunk_overlap=CHUNK_OVERLAP)
 store = FaissEmbeddingStore()
-answer_generator = OllamaAnswerGenerator(model_name="gemma3", ollama_base_url="http://localhost:11434")
+answer_generator = OllamaAnswerGenerator(model_name="pdlRAG", ollama_base_url="http://localhost:11434")
 # logger.info("Image reading and OCR processing script started.")
 # image_path = r"N:\Coding\Projects\PDL\data\344.jpg"  # Replace with your image path
 
@@ -43,26 +43,19 @@ answer_generator = OllamaAnswerGenerator(model_name="gemma3", ollama_base_url="h
 
 logger.info("Starting search functionality test...")
 test_queries = {
-        "punjabi": "ਬੰਗਲਾਦੇਸ਼ ਵਿਚ 'ਮੁਕਤੀ ਬਾਹਿਨੀ' ਨੇ ਕੀ ਭੂਮਿਕਾ ਨਿਭਾਈ?",  # A test query in Punjabi
-        "hindi": "बंगाल देश में 'मुक्ति सेना' की भूमिका क्या थी?",      # A test query in Hindi
-        "english": "What role did the Mukti Bahini play in Bangladesh?"      # A test query in English
+        "punjabi": "ਇੰਦਰਾਂ ਗਾਂਧੀ ਕਦੋਂ ਭਾਰਤ ਦੀ ਪ੍ਰਧਾਨ ਮੰਤਰੀ ਬਣੀ?",  # A test query in Punjabi
+        "hindi": "इंदिरा गांधी कब भारत की प्रधानमंत्री बनीं?",      # A test query in Hindi
+        "english": "When did Indira Gandhi become the Prime Minister of India?"      # A test query in English
     }
 for language, query in test_queries.items():
     try:
         logger.info(f"Testing search in {language} with query: '{query}'")
         
         # Get search results
-        results = store.search(query, language, k=3)
+        results = store.search(query, language, k=6)
         
         # Log results
         logger.info(f"Found {len(results)} results for {language} query")
-        
-        # Display each result
-        # for i, doc in enumerate(results):
-        #     logger.info(f"Result {i+1}:")
-        #     logger.info(f"Content: {doc.page_content}...")
-        #     logger.info(f"Metadata: {doc.metadata}")
-        #     logger.info("---")
 
         answer = answer_generator.generate_answer(query, results, language)
         logger.info(f"Answer for {language} query: {answer}")

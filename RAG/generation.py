@@ -4,7 +4,7 @@ import requests
 from typing import List, Dict, Any, Optional
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
-from langchain.llms import Ollama
+from langchain_ollama import OllamaLLM as Ollama
 from langchain.chains import LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
@@ -40,7 +40,8 @@ class OllamaAnswerGenerator:
                 input_variables=["query", "context"],
                 template="""
                 ਹੇਠ ਦਿੱਤੇ ਦਸਤਾਵੇਜ਼ਾਂ ਦੇ ਆਧਾਰ 'ਤੇ ਦਿੱਤੇ ਗਏ ਸਵਾਲ ਦਾ ਉੱਤਰ ਦਿਓ।
-                
+                Language: Punjabi
+
                 ਸਵਾਲ: {query}
                 
                 ਦਸਤਾਵੇਜ਼:
@@ -53,6 +54,7 @@ class OllamaAnswerGenerator:
                 input_variables=["query", "context"],
                 template="""
                 नीचे दिए गए दस्तावेजों के आधार पर दिए गए प्रश्न का उत्तर दें।
+                Language: Hindi
                 
                 प्रश्न: {query}
                 
@@ -66,6 +68,7 @@ class OllamaAnswerGenerator:
                 input_variables=["query", "context"],
                 template="""
                 Answer the question based on the documents provided below.
+                Language: English
                 
                 Question: {query}
                 
@@ -79,9 +82,13 @@ class OllamaAnswerGenerator:
         
         # Create LLM chains for each language
         self.chains = {
-            lang: LLMChain(llm=self.llm, prompt=prompt)
+            lang: prompt | self.llm
             for lang, prompt in self.prompt_templates.items()
         }
+        # self.chains = {
+        #     lang: LLMChain(llm=self.llm, prompt=prompt)
+        #     for lang, prompt in self.prompt_templates.items()
+        # }
     
     def check_ollama_availability(self) -> bool:
         """
@@ -140,7 +147,7 @@ class OllamaAnswerGenerator:
         
         # Generate answer using the appropriate chain
         try:
-            response = self.chains[language].run(query=query, context=context)
+            response = self.chains[language].invoke({"query":query, "context":context})
             return response
         except Exception as e:
             return f"Error generating answer: {str(e)}"
