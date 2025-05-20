@@ -17,7 +17,7 @@ class MultilingualTextSplitter:
         self.base_splitter = RecursiveCharacterTextSplitter(
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
-            separators=["\n\n", "\n", "।", ".", "!", "?", " ", ""]
+            separators=["\n\n", "\n", "।", ".", "!", "?"]
         )
     
     def generate_chunk_id(self, text: str, doc_id: str, idx: int) -> str:
@@ -25,12 +25,13 @@ class MultilingualTextSplitter:
         content_hash = hashlib.md5(text.encode()).hexdigest()[:10]
         return f"{doc_id}_{idx}_{content_hash}"
     
-    def split_documents(self, documents: Dict[str, List[str]]) -> Dict[str, List[Dict]]:
+    def split_documents(self, documents: Dict[str, List[str]], doc_uuid: str) -> Dict[str, List[Dict]]:
         """
         Split documents in all languages while maintaining alignment.
         
         Args:
             documents: Dictionary mapping language to list of documents
+            doc_uuid: Unique identifier for the document set
             
         Returns:
             Dictionary mapping language to list of chunk dictionaries
@@ -40,7 +41,7 @@ class MultilingualTextSplitter:
         # First, chunk the Punjabi documents (source language)
         punjabi_chunks = []
         for doc_idx, doc_text in enumerate(documents["punjabi"]):
-            doc_id = f"doc_{doc_idx}"
+            doc_id = f"doc_{doc_uuid}"
             chunks = self.base_splitter.create_documents([doc_text])
             
             for chunk_idx, chunk in enumerate(chunks):
@@ -59,7 +60,7 @@ class MultilingualTextSplitter:
         for lang in ["hindi", "english"]:
             # We'll assume we have parallel documents in the same order
             for doc_idx, doc_text in enumerate(documents[lang]):
-                doc_id = f"doc_{doc_idx}"
+                doc_id = f"doc_{doc_uuid}"
                 # Use the same chunking strategy to maintain roughly parallel chunks
                 chunks = self.base_splitter.create_documents([doc_text])
                 

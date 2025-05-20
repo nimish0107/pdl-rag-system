@@ -4,3 +4,4 @@ __pycache__/
 logs/
 output*.txt
 faiss_indexes/
+data/

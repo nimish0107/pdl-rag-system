@@ -10,4 +10,5 @@ faiss-cpu
 sentence_transformers
 langchain-community
 langchain-ollama
-  
+fastapi
+uvicorn
