@@ -9,4 +9,8 @@ langchain
 faiss-cpu
 sentence_transformers
 langchain-community
+langchain-ollama
+parler-tts
+soundfile
+
   
