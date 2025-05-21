@@ -44,11 +44,7 @@ async def add_document(file_path: str, doc_uuid: str) -> int:
     logger.info("Adding documents to store")
     await asyncio.to_thread(store.add_documents, chunked_docs)
     
-    return len(chunked_docs)
-    return {
-        "status": "success",
-        "chunks_added": len(chunked_docs)
-    }
+    return len(chunked_docs['punjabi'])
 
 async def query_chatbot(query: str, language: str, k: int = 6) -> str:
     """

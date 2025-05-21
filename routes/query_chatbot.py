@@ -16,4 +16,4 @@ async def query_endpoint(query: str, language: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating answer: {e}")
 
-    return {"query": query, "language": language, "answer": answer}
+    return {"status": "success", "query": query, "language": language, "answer": answer}

@@ -29,4 +29,8 @@ async def add_document_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing document: {e}")
 
-    return result
+    return {
+        "status": "success",
+        "chunks_added": result,
+        "doc_uuid": doc_uuid
+    }
