@@ -102,9 +102,9 @@ def synthesize_speech(
             )
 
         audio_arr = generation.cpu().numpy().squeeze()
-        sf.write('./logs/test.wav', audio_arr, model.config.sampling_rate)
+        # sf.write('./logs/test.wav', audio_arr, model.config.sampling_rate)
         # logger.info(f"Saved TTS output to {output_path}")
-        return audio_arr
+        return audio_arr, model.config.sampling_rate
 
     except Exception as e:
         logger.error(f"Error during speech synthesis: {e}")

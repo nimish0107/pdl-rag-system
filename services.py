@@ -70,5 +70,5 @@ async def generate_audio(text: str, language: str) -> str:
     if language not in {"punjabi", "hindi", "english"}:
         raise ValueError(f"Unsupported language '{language}'. Valid options are punjabi, hindi, english.")
 
-    audio = await asyncio.to_thread(synthesize_speech, text, language)
-    return audio
+    audio, sr = await asyncio.to_thread(synthesize_speech, text, language)
+    return audio, sr
