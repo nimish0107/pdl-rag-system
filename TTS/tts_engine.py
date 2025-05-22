@@ -59,7 +59,7 @@ def cleanup_resources(model: Optional[ParlerTTSForConditionalGeneration], *args)
 def synthesize_speech(
     prompt: str,
     language: str,
-    output_path: str = "indic_tts_out.wav",
+    # output_path: str = "indic_tts_out.wav",
     voice_description: Optional[str] = None,
     keep_resources: bool = False,
     model_name: str = "ai4bharat/indic-parler-tts"
@@ -77,12 +77,12 @@ def synthesize_speech(
 
     voice_description = voice_description or VOICE_DESCRIPTIONS[language]
 
-    output_dir = os.path.dirname(output_path) or "."
-    if not os.path.exists(output_dir):
-        logger.error(f"Output directory {output_dir} does not exist")
-        return None
-    if os.path.exists(output_path):
-        logger.warning(f"Output file {output_path} already exists and will be overwritten")
+    # output_dir = os.path.dirname(output_path) or "."
+    # if not os.path.exists(output_dir):
+    #     logger.error(f"Output directory {output_dir} does not exist")
+    #     return None
+    # if os.path.exists(output_path):
+    #     logger.warning(f"Output file {output_path} already exists and will be overwritten")
 
     model, tokenizer, description_tokenizer = load_model_and_tokenizers(model_name)
     if model is None or tokenizer is None or description_tokenizer is None:
@@ -102,8 +102,8 @@ def synthesize_speech(
             )
 
         audio_arr = generation.cpu().numpy().squeeze()
-        sf.write(output_path, audio_arr, model.config.sampling_rate)
-        logger.info(f"Saved TTS output to {output_path}")
+        sf.write('./logs/test.wav', audio_arr, model.config.sampling_rate)
+        # logger.info(f"Saved TTS output to {output_path}")
         return audio_arr
 
     except Exception as e:
@@ -130,7 +130,7 @@ if __name__ == "__main__":
         audio = synthesize_speech(
             prompt=prompt,
             language=lang,
-            output_path=output_file,
+            # output_path=output_file,
             keep_resources=keep
         )
         if audio is not None:

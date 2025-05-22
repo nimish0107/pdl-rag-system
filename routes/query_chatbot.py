@@ -17,3 +17,14 @@ async def query_endpoint(query: str, language: str):
         raise HTTPException(status_code=500, detail=f"Error generating answer: {e}")
 
     return {"status": "success", "query": query, "language": language, "answer": answer}
+
+
+#     buffer = io.BytesIO()
+#     sf.write(buffer, audio, 16000, format='WAV')  # Adjust sample rate if needed
+#     buffer.seek(0)
+
+#     return StreamingResponse(
+#         content=buffer,
+#         media_type="audio/wav",
+#         headers={"answer": answer, "query":query,"language":language,"Content-Disposition": "inline; filename=answer.wav"}
+#     )

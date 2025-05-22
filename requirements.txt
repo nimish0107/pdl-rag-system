@@ -16,3 +16,4 @@ soundfile
 langchain-ollama
 fastapi
 uvicorn
+soundfile
