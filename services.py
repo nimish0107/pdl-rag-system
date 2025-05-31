@@ -72,3 +72,22 @@ async def generate_audio(text: str, language: str) -> str:
 
     audio, sr = await asyncio.to_thread(synthesize_speech, text, language)
     return audio, sr
+
+async def delete_doc_by_id(doc_id: str) -> bool:
+    """
+    Delete a document by its ID.
+    """
+    # Validate document ID
+    if not doc_id:
+        raise ValueError("Invalid document ID.")
+
+    # Delete the document (sync -> thread)
+    result = await asyncio.to_thread(store.delete_document_by_id, doc_id)
+    return result
+
+async def delete_all_docs() -> bool:
+    """
+    Asynchronously delete all documents from all language FAISS indexes.
+    """
+    result = await asyncio.to_thread(store.delete_all_documents)
+    return result

@@ -44,3 +44,5 @@ logger.addHandler(console_handler)
 logger.info("Logger initialized successfully.")
 # logger.warning("This is a warning.")
 # logger.error("Unicode support test: 🚀🔥✨")
+
+DATA_DIR = "data"

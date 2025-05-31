@@ -1,13 +1,14 @@
 from langchain_community.vectorstores import FAISS
 import numpy as np
 import os
+import shutil
 import json
 from sentence_transformers import SentenceTransformer
 from typing import Dict, List
 from utils import logger  
 from langchain.schema import Document
 from langchain.embeddings.base import Embeddings
-
+from utils import DATA_DIR
 
 from RAG.TextSplitter import MultilingualTextSplitter
 
@@ -138,6 +139,71 @@ class FaissEmbeddingStore:
         return self.vector_stores[language].similarity_search(query, k=k)
     
     
+    def delete_document_by_id(self, doc_id: str):
+        """
+        Delete all vectors associated with the given doc_id from each language's FAISS store.
+        """
+        doc_id = f"doc_{doc_id}"  # Ensure doc_id is formatted correctly
+        deleted_any = False
+        for lang in LANGUAGES:
+            store = self.vector_stores.get(lang)
+            if store is None:
+                logger.warning(f"No vector store found for language: {lang}")
+                continue
 
+            # Fetch all existing documents
+            existing_docs = store.docstore._dict.values()
+            remaining_docs = [doc for doc in existing_docs if doc.metadata.get("doc_id") != doc_id]
+
+            if len(remaining_docs) == len(existing_docs):
+                logger.info(f"No documents found for deletion with doc_id: {doc_id} in {lang}")
+                continue
             
+            non_empty_docs = [doc for doc in remaining_docs if doc.page_content.strip()]
+            if not non_empty_docs:
+                deleted_any = True
+                logger.warning(f"All remaining docs for {lang} are empty. Skipping FAISS index rebuild.")
+                self.vector_stores[lang] = None
+                if os.path.exists(self._get_store_path(lang)):
+                    shutil.rmtree(self._get_store_path(lang))
+                continue
+            logger.info(f"Rebuilding FAISS index for {lang} without doc_id: {doc_id}")
 
+            if len(remaining_docs) < len(existing_docs):
+                deleted_any = True
+                new_index = FAISS.from_documents(
+                    documents=remaining_docs,
+                    embedding=self.embedder
+                )
+                self.vector_stores[lang] = new_index
+                new_index.save_local(self._get_store_path(lang))
+            logger.info(f"Updated vector store saved after deletion for {lang}")
+
+        for ext in ["jpg", "jpeg", "png"]:
+            file_path = os.path.join(DATA_DIR, f"{doc_id}.{ext}")
+            if os.path.exists(file_path):
+                try:
+                    os.remove(file_path)
+                    logger.info(f"Deleted file: {file_path}")
+                    deleted_any = True
+                except Exception as e:
+                    logger.error(f"Failed to delete file {file_path}: {e}")
+        return deleted_any
+    
+    def delete_all_documents(self) -> bool:
+        """
+        Deletes all documents and clears all FAISS indexes for all languages.
+        """
+        deleted = False
+        for lang in LANGUAGES:
+            if self.vector_stores[lang] is not None:
+                self.vector_stores[lang] = None  # Clear from memory
+                index_path = self._get_store_path(lang)
+                if os.path.exists(index_path):
+                    shutil.rmtree(index_path)  # Delete the directory with index.faiss and index.pkl
+                    logger.info(f"Deleted FAISS index directory for {lang}")
+                    deleted = True
+                if os.path.exists(DATA_DIR):
+                    shutil.rmtree(DATA_DIR)
+                    os.makedirs(DATA_DIR, exist_ok=True)
+        return deleted
