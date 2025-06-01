@@ -14,3 +14,4 @@ langchain-ollama
 fastapi
 uvicorn
 gtts
+streamlit

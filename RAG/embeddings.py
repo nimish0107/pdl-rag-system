@@ -139,11 +139,11 @@ class FaissEmbeddingStore:
         return self.vector_stores[language].similarity_search(query, k=k)
     
     
-    def delete_document_by_id(self, doc_id: str):
+    def delete_document_by_id(self, doc_id_file: str):
         """
         Delete all vectors associated with the given doc_id from each language's FAISS store.
         """
-        doc_id = f"doc_{doc_id}"  # Ensure doc_id is formatted correctly
+        doc_id = f"doc_{doc_id_file}"  # Ensure doc_id is formatted correctly
         deleted_any = False
         for lang in LANGUAGES:
             store = self.vector_stores.get(lang)
@@ -180,7 +180,7 @@ class FaissEmbeddingStore:
             logger.info(f"Updated vector store saved after deletion for {lang}")
 
         for ext in ["jpg", "jpeg", "png"]:
-            file_path = os.path.join(DATA_DIR, f"{doc_id}.{ext}")
+            file_path = os.path.join(DATA_DIR, f"{doc_id_file}.{ext}")
             if os.path.exists(file_path):
                 try:
                     os.remove(file_path)

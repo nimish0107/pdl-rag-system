@@ -1,7 +1,7 @@
 import os
 import json
 import requests
-from typing import List, Dict, Any, Optional
+from typing import List, AsyncGenerator
 from langchain.schema import Document
 from langchain.prompts import PromptTemplate
 from langchain_ollama import OllamaLLM as Ollama
@@ -31,7 +31,8 @@ class OllamaAnswerGenerator:
             base_url=ollama_base_url,
             callback_manager=callback_manager,
             temperature=0.1,  # Lower temperature for more deterministic answers
-            verbose=True
+            verbose=True,
+            streaming=True  # Enable streaming for real-time output
         )
         
         # Define prompt templates for different languages
@@ -120,7 +121,7 @@ class OllamaAnswerGenerator:
         
         return context_str
     
-    def generate_answer(self, query: str, documents: List[Document], language: str) -> str:
+    async def generate_answer(self, query: str, documents: List[Document], language: str) -> AsyncGenerator[str, None]:
         """
         Generate an answer for the given query based on retrieved documents.
         
@@ -136,18 +137,20 @@ class OllamaAnswerGenerator:
             raise ValueError(f"Unsupported language: {language}")
         
         if not documents:
-            return "No relevant documents found to answer your question."
+            yield  "No relevant documents found to answer your question."
+            return
         
         # Check if Ollama is available
         if not self.check_ollama_availability():
-            return "Error: Could not connect to the Ollama server. Please ensure it's running."
+            yield "Error: Could not connect to the Ollama server. Please ensure it's running."
+            return
         
         # Format documents into context string
         context = self.format_documents_for_context(documents)
         
         # Generate answer using the appropriate chain
         try:
-            response = self.chains[language].invoke({"query":query, "context":context})
-            return response
+            async for chunk in self.chains[language].astream({"query":query, "context":context}):
+                yield chunk
         except Exception as e:
-            return f"Error generating answer: {str(e)}"
+            yield  f"Error generating answer: {str(e)}"
