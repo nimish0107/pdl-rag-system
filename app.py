@@ -7,6 +7,7 @@ from utils import DATA_DIR
 from typing import AsyncGenerator
 import pandas as pd
 from datetime import datetime
+import glob
 
 # Import your RAG functions (assuming they're in the same directory or properly installed)
 from services import add_document, query_chatbot, delete_doc_by_id, delete_all_docs
@@ -44,6 +45,60 @@ def run_async(coro):
         asyncio.set_event_loop(loop)
     return loop.run_until_complete(coro)
 
+def get_files_from_data_dir():
+    """Get all image files from DATA_DIR with their metadata"""
+    if not os.path.exists(DATA_DIR):
+        return []
+    
+    image_extensions = ['.png', '.jpg', '.jpeg', '.tiff', '.bmp']
+    files_data = []
+    
+    for file_path in glob.glob(os.path.join(DATA_DIR, "*")):
+        if os.path.isfile(file_path):
+            file_ext = os.path.splitext(file_path)[1].lower()
+            if file_ext in image_extensions:
+                file_stats = os.stat(file_path)
+                file_name = os.path.basename(file_path)
+                
+                # Extract UUID from filename (assuming format: uuid.extension)
+                doc_id = os.path.splitext(file_name)[0]
+                
+                files_data.append({
+                    "doc_id": doc_id,
+                    "filename": file_name,
+                    "file_path": file_path,
+                    "size_bytes": file_stats.st_size,
+                    "size_kb": f"{file_stats.st_size / 1024:.1f}",
+                    "created_time": datetime.fromtimestamp(file_stats.st_ctime).strftime("%Y-%m-%d %H:%M:%S"),
+                    "modified_time": datetime.fromtimestamp(file_stats.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
+                })
+    
+    return files_data
+
+def sync_session_state_with_data_dir():
+    """Synchronize session state document history with actual files in DATA_DIR"""
+    actual_files = get_files_from_data_dir()
+    actual_doc_ids = {file_data['doc_id'] for file_data in actual_files}
+    
+    # Remove documents from session state that no longer exist in DATA_DIR
+    st.session_state.document_history = [
+        doc for doc in st.session_state.document_history 
+        if doc['doc_id'] in actual_doc_ids
+    ]
+    
+    # Add files from DATA_DIR that aren't in session state
+    existing_doc_ids = {doc['doc_id'] for doc in st.session_state.document_history}
+    
+    for file_data in actual_files:
+        if file_data['doc_id'] not in existing_doc_ids:
+            st.session_state.document_history.append({
+                "doc_id": file_data['doc_id'],
+                "filename": file_data['filename'],
+                "upload_time": file_data['created_time'],
+                "size_kb": file_data['size_kb']
+            })
+
+sync_session_state_with_data_dir()
 # Page 1: Query Chatbot
 if page == "💬 Query Chatbot":
     st.title("💬 Multilingual RAG Chatbot")
@@ -111,17 +166,9 @@ if page == "💬 Query Chatbot":
                     run_async(stream_response())
                     response_placeholder.markdown("".join(response_chunks))
                     st.success("Response generated successfully!")
-                col1, col2 = st.columns([1, 4])
-                with col1:
-                    if st.button("🔊 Generate Audio", key="new_audio_btn"):
-                        with st.spinner("Generating audio..."):
-                            audio_data = generate_audio("".join(response_chunks), language)
-                            if audio_data:
-                                st.audio(audio_data, format='audio/mp3')
-                            else:
-                                st.error("Failed to generate audio")
                 # Add to chat history
                 st.session_state.chat_history.append((query, "".join(response_chunks), language))
+                st.rerun()
 
             except Exception as e:
                 st.error(f"Error generating response: {str(e)}")
@@ -134,6 +181,7 @@ if page == "💬 Query Chatbot":
 
 # Page 2: Document Ingestion
 elif page == "📄 Document Ingestion":
+    sync_session_state_with_data_dir()
     st.title("📄 Document Ingestion")
     st.markdown("Upload image documents to add them to the RAG system.")
     
@@ -142,7 +190,7 @@ elif page == "📄 Document Ingestion":
         "Choose image files",
         type=['png', 'jpg', 'jpeg'],
         accept_multiple_files=True,
-        help="Upload images containing text in Punjabi, Hindi, or English"
+        help="Upload images containing text in Punjabi"
     )
     
     if uploaded_files:
@@ -178,7 +226,7 @@ elif page == "📄 Document Ingestion":
                     if os.path.exists(file_path):
                         raise ValueError(f"File {uploaded_file.name} already exists in the system.")
                     with open(file_path, "wb") as buffer:
-                        shutil.copyfileobj(uploaded_file.file, buffer)
+                        shutil.copyfileobj(uploaded_file, buffer)
 
                     try:
                         # Process the document
@@ -189,7 +237,6 @@ elif page == "📄 Document Ingestion":
                             "doc_id": doc_uuid,
                             "filename": uploaded_file.name,
                             "upload_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "chunk_count": chunk_count,
                             "size_kb": f"{uploaded_file.size / 1024:.1f}"
                         })
                         
@@ -197,7 +244,7 @@ elif page == "📄 Document Ingestion":
                         
                     finally:
                         # Clean up the uploaded file from memory
-                        uploaded_file.file.close()
+                        uploaded_file.close()
                         
                 except Exception as e:
                     st.error(f"❌ Error processing {uploaded_file.name}: {str(e)}")
@@ -213,7 +260,6 @@ elif page == "📄 Document Ingestion":
             "doc_id": "Document ID",
             "filename": "Filename",
             "upload_time": "Upload Time",
-            "chunk_count": "Chunks",
             "size_kb": "Size (KB)"
         })
         st.dataframe(history_df, use_container_width=True)
@@ -233,7 +279,6 @@ elif page == "🗑️ Document Management":
             "doc_id": "Document ID",
             "filename": "Filename", 
             "upload_time": "Upload Time",
-            "chunk_count": "Chunks",
             "size_kb": "Size (KB)"
         })
         st.dataframe(display_df, use_container_width=True)
@@ -307,9 +352,7 @@ st.sidebar.markdown("---")
 st.sidebar.markdown("### 📊 System Stats")
 if st.session_state.document_history:
     total_docs = len(st.session_state.document_history)
-    total_chunks = sum(doc['chunk_count'] for doc in st.session_state.document_history)
     st.sidebar.metric("Total Documents", total_docs)
-    st.sidebar.metric("Total Chunks", total_chunks)
 else:
     st.sidebar.info("No documents loaded")
 
