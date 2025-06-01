@@ -10,10 +10,7 @@ faiss-cpu
 sentence_transformers
 langchain-community
 langchain-ollama
-parler-tts
-soundfile
-
 langchain-ollama
 fastapi
 uvicorn
-soundfile
+gtts

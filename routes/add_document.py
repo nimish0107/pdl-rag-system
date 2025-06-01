@@ -4,8 +4,9 @@ import asyncio
 from fastapi import FastAPI, UploadFile, File, HTTPException,APIRouter
 from services import add_document
 import uuid
+from utils import DATA_DIR
 
-DATA_DIR = "data"
+
 os.makedirs(DATA_DIR, exist_ok=True)
 
 add_document_router = APIRouter()
@@ -18,7 +19,7 @@ async def add_document_endpoint(file: UploadFile = File(...)):
 
     doc_uuid = str(uuid.uuid4())
     # Save file to data directory
-    file_path = os.path.join(DATA_DIR, doc_uuid + "_" + file.filename)
+    file_path = os.path.join(DATA_DIR, doc_uuid + os.path.splitext(file.filename)[-1])
     if os.path.exists(file_path):
         raise HTTPException(status_code=400, detail="File already exists.")
     with open(file_path, "wb") as buffer:
