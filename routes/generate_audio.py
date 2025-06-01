@@ -3,6 +3,7 @@ from gtts import gTTS
 import io
 from fastapi.responses import StreamingResponse
 from fastapi import FastAPI,HTTPException,APIRouter
+from TTS.tts_engine import generate_audio
 
 generate_audio_router = APIRouter()
 
@@ -20,10 +21,13 @@ async def generate_audio_endpoint(answer: str, language: str):
     if language not in valid_languages:
         raise HTTPException(status_code=400, detail=f"Invalid language. Supported languages: {', '.join(valid_languages.keys())}")
     try:
-        tts = gTTS(text=answer, lang=valid_languages[language])
-        buffer = io.BytesIO()
-        tts.write_to_fp(buffer)
-        buffer.seek(0)
+        audio_data = generate_audio(answer, language)
+        if audio_data is None:
+            raise HTTPException(
+                status_code=400,
+                detail="Failed to generate audio. Check logs for details."
+            )
+        buffer = io.BytesIO(audio_data)
     except ValueError as ve:
         raise HTTPException(status_code=400, detail=str(ve))
     except Exception as e:

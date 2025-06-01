@@ -46,3 +46,8 @@ logger.info("Logger initialized successfully.")
 # logger.error("Unicode support test: 🚀🔥✨")
 
 DATA_DIR = "data"
+valid_languages = {
+    "punjabi": "pa",
+    "hindi": "hi",
+    "english": "en"
+}
