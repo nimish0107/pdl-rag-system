@@ -4,6 +4,7 @@ from Translation.translate import translate_punjabi_to_HindiEnglish
 from RAG.TextSplitter import MultilingualTextSplitter, CHUNK_SIZE, CHUNK_OVERLAP
 from RAG.embeddings import FaissEmbeddingStore
 from RAG.generation import OllamaAnswerGenerator
+from typing import List, Dict, AsyncGenerator
 # from TTS.tts_engine import synthesize_speech
 from utils import logger
 
@@ -47,7 +48,7 @@ async def add_document(file_path: str, doc_uuid: str) -> int:
     
     return len(chunked_docs['punjabi'])
 
-async def query_chatbot(query: str, language: str, k: int = 6) -> str:
+async def query_chatbot(query: str, language: str, k: int = 6) -> AsyncGenerator[str, None]:
     """
     Retrieve relevant chunks from store and generate an answer.
     """
@@ -59,8 +60,8 @@ async def query_chatbot(query: str, language: str, k: int = 6) -> str:
     results = await asyncio.to_thread(store.search, query, language, k)
 
     # Generate answer from RAG model (sync -> thread)
-    answer = await asyncio.to_thread(answer_generator.generate_answer, query, results, language)
-    return answer
+    async for chunk in answer_generator.generate_answer(query, results, language):
+        yield chunk
 
 # async def generate_audio(text: str, language: str) -> str:
 #     """
