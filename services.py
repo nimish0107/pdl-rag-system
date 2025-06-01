@@ -4,7 +4,7 @@ from Translation.translate import translate_punjabi_to_HindiEnglish
 from RAG.TextSplitter import MultilingualTextSplitter, CHUNK_SIZE, CHUNK_OVERLAP
 from RAG.embeddings import FaissEmbeddingStore
 from RAG.generation import OllamaAnswerGenerator
-from TTS.tts_engine import synthesize_speech
+# from TTS.tts_engine import synthesize_speech
 from utils import logger
 
 store = FaissEmbeddingStore()
@@ -62,16 +62,16 @@ async def query_chatbot(query: str, language: str, k: int = 6) -> str:
     answer = await asyncio.to_thread(answer_generator.generate_answer, query, results, language)
     return answer
 
-async def generate_audio(text: str, language: str) -> str:
-    """
-    Retrieve relevant chunks from store and generate an answer.
-    """
-    # Validate language
-    if language not in {"punjabi", "hindi", "english"}:
-        raise ValueError(f"Unsupported language '{language}'. Valid options are punjabi, hindi, english.")
+# async def generate_audio(text: str, language: str) -> str:
+#     """
+#     Retrieve relevant chunks from store and generate an answer.
+#     """
+#     # Validate language
+#     if language not in {"punjabi", "hindi", "english"}:
+#         raise ValueError(f"Unsupported language '{language}'. Valid options are punjabi, hindi, english.")
 
-    audio, sr = await asyncio.to_thread(synthesize_speech, text, language)
-    return audio, sr
+#     audio, sr = await asyncio.to_thread(synthesize_speech, text, language)
+#     return audio, sr
 
 async def delete_doc_by_id(doc_id: str) -> bool:
     """
