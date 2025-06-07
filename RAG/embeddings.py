@@ -32,12 +32,14 @@ class MultilingualEmbedder(Embeddings):
         """
         Embeds a list of Document objects using the SentenceTransformer model.
         """
+        texts = ["passage: " + text for text in texts]  # Prepend 'passage: ' to each text
         return self.model.encode(texts, convert_to_numpy=True, show_progress_bar=True)
     
     def embed_query(self, query: str) -> np.ndarray:
         """
         Embeds a single query using the SentenceTransformer model.
         """
+        query = "query: " + query  # Prepend 'query: ' to the query
         return self.model.encode([query], convert_to_numpy=True, show_progress_bar=True)[0]
 
 class FaissEmbeddingStore:
