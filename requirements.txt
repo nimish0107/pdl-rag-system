@@ -15,3 +15,4 @@ fastapi
 uvicorn
 gtts
 streamlit
+python-multipart

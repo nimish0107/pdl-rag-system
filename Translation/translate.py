@@ -49,23 +49,18 @@ async def translate_batch(batch, src, tgt, tokenizer, model):
         decoded = tokenizer.batch_decode(outputs, skip_special_tokens=True)
     return ip.postprocess_batch(decoded, lang=tgt)
 
-async def translate_punjabi_to_HindiEnglish(input_text):
-    
-    input_sentences = input_text.split("\n\n")
+async def translate_punjabi_to_HindiEnglish(input_sentences):
 
     task_en = translate_batch(input_sentences, src_lang, "eng_Latn", tokenizer_en, model_en)
     task_hi = translate_batch(input_sentences, src_lang, "hin_Deva", tokenizer_hi, model_hi)
 
     translations_en, translations_hi = await asyncio.gather(task_en, task_hi)
 
-    output_lines = {"punjabi": [""], "english": [""], "hindi": [""]}
+    output_lines = {"punjabi": [], "english": [], "hindi": []}
     for punjabi, en, hi in zip(input_sentences, translations_en, translations_hi):
-        output_lines["punjabi"][0] += punjabi + "\n\n"
-        output_lines["english"][0] += en + "\n\n"
-        output_lines["hindi"][0] += clean_output_text_hindi(hi) + "\n\n"
-
-    # with open("translations_output.txt", "w", encoding="utf-8") as f:
-    #     f.writelines(output_lines)
+        output_lines["punjabi"].append(punjabi)
+        output_lines["english"].append(en)
+        output_lines["hindi"].append(clean_output_text_hindi(hi))
 
     logger.info("\nTranslation Completed.")
     return output_lines
