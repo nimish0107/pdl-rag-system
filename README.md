@@ -39,7 +39,22 @@ This project is focused on building a **Retrieval-Augmented Generation (RAG)** s
 
 ---
 
+## 📁 Tech Stack
+
+1. OCR -> TesseractOCR
+2. Translation -> IndicTrans2
+3. RAG -> Langchain
+4. Embeddings -> intfloat/e5-small
+5. LLM -> Ollama, Gemma3
+6. Vector Store -> FAISS
+
+---
 ## 📚 Datasets Used
+The dataset was sourced from Panjab Digital Library (PDL) and consists of scanned images
+of historical books, manuscripts, and archival materials. These documents span various
+genres, including religious texts, literary works, and administrative records, and are primarily
+written in Gurmukhi script. The images were later processed for text extraction and language
+translation tasks.
 
 ---
 
@@ -54,19 +69,29 @@ Separate evaluations are done for:
 
 ---
 
-## 📁 Tech Stack
-
+## 📁 Setting Up
+1. install all requirements using command: <br> ```pip install -r requirements.txt```
+2. setup tesseract-ocr and other dependencies using [Tesseract Setup](./OCR/README.md)
+3. setup ollama and related dependencies using [Ollama Setup](./RAG/settingOllama.md)
+4. create ollama model pdlRAG using command: <br>
+    ```ollama create pdlRAG -f Modelfile```
+5. install all required models using ```models.py```:<br>
+    Run Command ```python models.py```
+---
+## 👨‍💻 Running the project
+1. Run Ollama server - use command: <br>
+    ```ollama serve```
+2. Open a new terminal
+3. For Fast API, run using command:<br>
+    ```uvicorn main:app```<br>
+    For Streamlit UI, run using command: <br>
+    ```streamlit run app.py```
 ---
 
 ## 👥 Contributors
 
 - **Harshita** – Punjabi to English translation
 - **Nimish** – Punjabi to Hindi translation
-
----
-
-## 📝 To Do
-
 
 ---
 

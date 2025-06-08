@@ -12,8 +12,8 @@
     Add this to `C:\Program Files\Tesseract-OCR\tessdata` if Tesseract-OCR is installed in C:\Program Files
 + Linux:
     1. Use your package manager:
-         sudo apt-get install tesseract-ocr tesseract-ocr-pan
+         ```sudo apt-get install tesseract-ocr tesseract-ocr-pan```
 
 ### Python Requirements
 • Install Pillow and Pytesseract:
-    pip install pillow pytesseract
+    ```pip install pillow pytesseract```
