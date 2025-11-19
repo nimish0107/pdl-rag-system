@@ -1,0 +1,21 @@
+datasets
+tqdm
+transformers==4.53.2
+pytesseract
+pillow
+# IndicTranslateToolkit @ git+https://github.com/VarunGumma/IndicTransToolkit.git
+# -e git+https://github.com/VarunGumma/IndicTransToolkit.git#egg=IndicTransToolkit
+indictranstoolkit
+langchain
+faiss-cpu
+sentence_transformers
+langchain-community
+langchain-ollama
+langchain-ollama
+fastapi
+uvicorn
+gtts
+streamlit
+python-multipart
+langchain_text_splitters
+sentencepiece
